@@ -1,0 +1,55 @@
+{
+  "name": "ShareX — Beyond Sharing",
+  "short_name": "ShareX",
+  "description": "Professional P2P File Sharing & Streaming Platform. Direct peer-to-peer WebRTC file transfer with zero cloud storage.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "categories": ["utilities", "productivity", "multimedia"],
+  "icons": [
+    {
+      "src": "assets/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Send Files",
+      "short_name": "Send",
+      "description": "Send files directly to nearby or remote peers",
+      "url": "./index.html?action=send",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Receive Files",
+      "short_name": "Receive",
+      "description": "Generate pairing code and QR to receive files",
+      "url": "./index.html?action=receive",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Scan QR",
+      "short_name": "Scan",
+      "description": "Scan receiver QR code with camera",
+      "url": "./index.html?action=scan",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

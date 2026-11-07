@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight-glass">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ShareX — Beyond Sharing. Experience Sharing.</title>
+  <meta name="description" content="Professional P2P File Sharing & Streaming Platform. Direct peer-to-peer WebRTC file transfer with zero cloud storage.">
+  <meta name="theme-color" content="#06080d">
+
+  <!-- OpenGraph Metadata -->
+  <meta property="og:title" content="ShareX — Beyond Sharing. Experience Sharing.">
+  <meta property="og:description" content="Direct WebRTC Peer-to-Peer file sharing and live media streaming with zero cloud storage.">
+  <meta property="og:image" content="assets/logos/og-preview.svg">
+  <meta property="og:type" content="website">
+
+  <!-- Favicons and PWA -->
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+  <link rel="alternate icon" href="assets/icons/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Core & Modular Stylesheets -->
+  <link rel="stylesheet" href="css/core.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <link rel="stylesheet" href="css/desktop.css">
+  <link rel="stylesheet" href="css/player.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. CINEMATIC INTRODUCTION (STRICT NO SKIP BUTTON SEQUENCE)
+       ======================================================================== -->
+  <div id="cinematic-splash">
+    <div class="splash-light-ring"></div>
+    <div class="splash-logo-box">
+      <img src="assets/logos/splash-logo.svg" alt="ShareX" width="130" height="130" class="anim-logo-expand">
+    </div>
+    <h1 class="splash-title">Share<span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">X</span></h1>
+    <p class="splash-tagline">Beyond Sharing. Experience Sharing.</p>
+    <div class="splash-loader-bar">
+      <div class="splash-loader-progress"></div>
+    </div>
+  </div>
+
+  <!-- Background Ambient Canvas & Glows -->
+  <canvas id="ambient-canvas"></canvas>
+  <div class="mesh-glow glow-blue"></div>
+  <div class="mesh-glow glow-violet"></div>
+  <div id="cursor-ambient-glow" class="cursor-ambient-glow"></div>
+
+  <!-- Global Desktop Drag and Drop Overlay -->
+  <div id="global-drag-overlay">
+    <div class="drag-overlay-box">
+      <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+      <h2 style="font-size: 26px; font-weight: 700; color: #fff;">Drop Files Anywhere to Share</h2>
+      <p style="color: var(--text-secondary);">Direct peer-to-peer transfer will begin instantly</p>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       2. MAIN APP SHELL & HEADER
+       ======================================================================== -->
+  <div id="app-container">
+
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="header-brand" title="ShareX Home">
+        <img src="assets/logos/logo.svg" alt="ShareX Logo" style="height: 34px;">
+      </div>
+
+      <div class="header-actions">
+        <!-- Live Connection Status Pill -->
+        <div class="connection-indicator-badge" id="header-connection-pill">
+          <span class="indicator-dot" id="connection-status-dot"></span>
+          <span id="connection-status-text">Ready</span>
+        </div>
+
+        <!-- PWA Install Trigger -->
+        <button class="btn-primary" id="pwa-install-btn" style="display: none; padding: 6px 14px; font-size: 12px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right: 4px;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Install App
+        </button>
+
+        <!-- Notification Tray Button -->
+        <button class="btn-icon" id="header-notif-btn" title="Notifications" aria-label="Notifications" style="position: relative;">
+          <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span id="notification-badge-count" style="display: none; position: absolute; top: -3px; right: -3px; background: var(--accent-electric); color: #fff; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px #38bdf8;">0</span>
+        </button>
+
+        <!-- Settings Button -->
+        <button class="btn-icon" id="header-settings-btn" title="Settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Viewport with Desktop Layout Container -->
+    <main class="view-viewport">
+      <div class="desktop-layout-container">
+
+        <!-- Desktop Sidebar Navigation -->
+        <aside class="desktop-sidebar desktop-only">
+          <div class="nav-item active" data-page="dashboard">
+            <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            <span>Dashboard</span>
+          </div>
+          <div class="nav-item" data-page="send">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            <span>Send Files</span>
+          </div>
+          <div class="nav-item" data-page="receive">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            <span>Receive Files</span>
+          </div>
+          <div class="nav-item" data-page="scan">
+            <svg viewBox="0 0 24 24"><path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm9.5-6.5v3h-3v-3h3M21 5h-6v6h6V5zm-6 8h1.5v1.5H15V13zm1.5 1.5H18V16h-1.5v-1.5zm1.5-1.5H19.5v1.5H18V13zm-3 3h1.5V17.5H15V16zm1.5 1.5H18V19h-1.5v-1.5zm1.5-1.5H19.5V17.5H18V16zm0 3h1.5V20.5H18V19zm1.5-1.5H21V19h-1.5v-1.5z"/></svg>
+            <span>Scan QR</span>
+          </div>
+          <div class="nav-item" data-page="history">
+            <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            <span>History</span>
+          </div>
+        </aside>
+
+        <!-- Pages Section -->
+        <div style="flex: 1; min-width: 0;">
+
+          <!-- ================================================================
+               PAGE 1: DASHBOARD
+               ================================================================ -->
+          <div class="view-page active" id="page-dashboard">
+
+            <!-- Hero Action Cards (Send, Receive, Scan) -->
+            <div class="hero-action-grid">
+              <!-- Send Card -->
+              <div class="hero-action-card send-card" id="hero-send-card">
+                <div class="hero-action-icon-box" style="color: var(--accent-blue);">
+                  <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </div>
+                <div>
+                  <h2 class="hero-action-title">SEND</h2>
+                  <p class="hero-action-desc">Select or drop files to transfer directly to nearby or remote peers.</p>
+                </div>
+                <div class="badge badge-blue">Direct WebRTC</div>
+              </div>
+
+              <!-- Receive Card -->
+              <div class="hero-action-card receive-card" id="hero-receive-card">
+                <div class="hero-action-icon-box" style="color: var(--accent-violet);">
+                  <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                </div>
+                <div>
+                  <h2 class="hero-action-title">RECEIVE</h2>
+                  <p class="hero-action-desc">Generate pairing QR and secure code to receive lossless files.</p>
+                </div>
+                <div class="badge badge-violet">Pairing Ready</div>
+              </div>
+
+              <!-- Scan Card -->
+              <div class="hero-action-card scan-card" id="hero-scan-card">
+                <div class="hero-action-icon-box" style="color: var(--status-success);">
+                  <svg viewBox="0 0 24 24"><path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm9.5-6.5v3h-3v-3h3M21 5h-6v6h6V5zm-6 8h1.5v1.5H15V13zm1.5 1.5H18V16h-1.5v-1.5zm1.5-1.5H19.5v1.5H18V13zm-3 3h1.5V17.5H15V16zm1.5 1.5H18V19h-1.5v-1.5zm1.5-1.5H19.5V17.5H18V16zm0 3h1.5V20.5H18V19zm1.5-1.5H21V19h-1.5v-1.5z"/></svg>
+                </div>
+                <div>
+                  <h2 class="hero-action-title">SCAN</h2>
+                  <p class="hero-action-desc">Open camera scanner to instantly connect with receiver's QR code.</p>
+                </div>
+                <div class="badge badge-green">Camera Active</div>
+              </div>
+            </div>
+
+            <!-- Connected Device Banner (Hidden until connected) -->
+            <div class="glass-panel" id="active-connection-card" style="display: none; padding: 20px; margin-bottom: 28px; border-color: rgba(56, 189, 248, 0.4);">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <div style="width: 14px; height: 14px; border-radius: 50%; background: var(--status-success); box-shadow: 0 0 12px var(--status-success);"></div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 15px;">Connected Peer: <span id="active-peer-name" style="color: var(--accent-blue);">Device</span></div>
+                    <div style="font-size: 12px; color: var(--text-muted);">WebRTC Direct DataChannel active. Ready for streaming.</div>
+                  </div>
+                </div>
+                <button class="btn-secondary" onclick="window.webrtcManager.close()" style="padding: 8px 16px; font-size: 12px;">Disconnect</button>
+              </div>
+            </div>
+
+            <!-- Dashboard Modular Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+
+              <!-- Left Column: Active & Recent Transfers -->
+              <div class="glass-panel" style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                  <h3 style="font-size: 17px; font-weight: 700;">Active Transfers</h3>
+                  <span class="badge badge-blue">Live</span>
+                </div>
+                <div id="dashboard-active-transfers">
+                  <div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px 0;">No active transfers</div>
+                </div>
+              </div>
+
+              <!-- Right Column: Stats & Storage-free Info -->
+              <div style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- Statistics Card -->
+                <div class="glass-panel" style="padding: 24px;">
+                  <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 18px;">Transfer Statistics</h3>
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; text-align: center;">
+                    <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                      <div id="stat-sent-count" style="font-size: 22px; font-weight: 800; color: var(--accent-blue);">0</div>
+                      <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Sent</div>
+                    </div>
+                    <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                      <div id="stat-receive-count" style="font-size: 22px; font-weight: 800; color: var(--accent-violet);">0</div>
+                      <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Received</div>
+                    </div>
+                    <div style="background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                      <div id="stat-total-bytes" style="font-size: 20px; font-weight: 800; color: var(--status-success);">0 B</div>
+                      <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Volume</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Storage-Free Explainer Card -->
+                <div class="glass-panel" style="padding: 24px; position: relative;">
+                  <div style="display: flex; align-items: flex-start; gap: 14px;">
+                    <div class="btn-icon" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-violet); flex-shrink: 0;">
+                      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                    </div>
+                    <div>
+                      <h4 style="font-size: 15px; font-weight: 700;">Storage-Free Architecture</h4>
+                      <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.5;">
+                        Your files are transferred directly memory-to-memory via encrypted WebRTC DataChannel. No files are uploaded to servers or stored in the cloud.
+                      </p>
+                      <button class="btn-secondary" id="storage-info-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 12px;">Architecture Details</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ================================================================
+               PAGE 2: SEND
+               ================================================================ -->
+          <div class="view-page" id="page-send">
+            <div class="glass-panel" style="padding: 28px; margin-bottom: 24px;">
+              <h2 style="font-family: var(--font-display); font-size: 24px; font-weight: 800; margin-bottom: 8px;">Send Files Peer-to-Peer</h2>
+              <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 24px;">Enter receiver's pairing code or drop files below to begin.</p>
+
+              <!-- Manual Pairing Input -->
+              <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                <input type="text" id="manual-pairing-input" placeholder="Enter Pairing Code (e.g. K7M-PQ29-XR)" style="flex: 1; min-width: 240px; font-family: var(--font-mono); text-transform: uppercase; font-size: 15px; letter-spacing: 2px;">
+                <button class="btn-primary" id="manual-pair-submit-btn">Connect to Peer</button>
+              </div>
+
+              <!-- File Selection Dropzone -->
+              <div id="send-file-dropzone" class="glass-card" style="border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: var(--radius-lg); padding: 40px 20px; text-align: center; cursor: pointer; transition: all var(--anim-base);">
+                <input type="file" id="send-file-input" multiple style="display: none;">
+                <input type="file" id="send-folder-input" webkitdirectory directory multiple style="display: none;">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="var(--accent-blue)" style="margin-bottom: 12px;"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                <div style="font-size: 16px; font-weight: 700; color: #fff;">Click to Browse or Drag Files Here</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Supports any file format, multi-file queues and large media</div>
+                <div style="display: flex; justify-content: center; gap: 12px; margin-top: 18px;" onclick="event.stopPropagation();">
+                  <button class="btn-secondary" id="add-files-btn" style="padding: 8px 18px; font-size: 13px;">Add Files</button>
+                  <button class="btn-secondary" id="add-folder-btn" style="padding: 8px 18px; font-size: 13px;">Add Folder</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Send Queue Section -->
+            <div class="glass-panel" style="padding: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <h3 style="font-size: 18px; font-weight: 700;">Transfer Queue</h3>
+                <div style="display: flex; gap: 10px;">
+                  <button class="btn-secondary" id="transfer-pause-btn" style="padding: 6px 14px; font-size: 12px;">Pause</button>
+                  <button class="btn-secondary" id="transfer-cancel-btn" style="padding: 6px 14px; font-size: 12px;">Cancel</button>
+                  <button class="btn-primary" id="start-transfer-btn" style="display: none; padding: 6px 18px; font-size: 13px;">Start Transfer</button>
+                </div>
+              </div>
+
+              <div id="send-queue-empty" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                Queue is empty. Select files above to transfer.
+              </div>
+              <div id="send-queue-list"></div>
+            </div>
+          </div>
+
+          <!-- ================================================================
+               PAGE 3: RECEIVE
+               ================================================================ -->
+          <div class="view-page" id="page-receive">
+            <div class="glass-panel" style="padding: 32px; text-align: center; margin-bottom: 24px;">
+              <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800;">Receive Files</h2>
+              <p style="color: var(--text-secondary); font-size: 13px; margin-top: 4px;">Share this pairing code or ask sender to scan your QR</p>
+
+              <!-- QR Code Presentation Box -->
+              <div style="display: flex; justify-content: center; margin: 28px 0;">
+                <div id="receive-qr-container" style="display: inline-block; padding: 12px; background: rgba(0, 0, 0, 0.4); border-radius: var(--radius-xl); border: 1px solid var(--glass-border);"></div>
+              </div>
+
+              <!-- Pairing Code Display -->
+              <div style="margin-bottom: 16px;">
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Secure Pairing Code</div>
+                <div id="pairing-code-display" class="pairing-code" style="font-family: var(--font-mono); font-size: 32px; font-weight: 800; color: var(--accent-blue); letter-spacing: 3px;">---</div>
+              </div>
+
+              <div id="pairing-expiry-timer" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-bottom: 24px;">
+                Expires in 5:00
+              </div>
+
+              <!-- Pairing Actions -->
+              <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+                <button class="btn-primary" id="copy-code-btn">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                  <span>Copy Code</span>
+                </button>
+                <button class="btn-secondary" id="share-code-btn">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                  <span>Share</span>
+                </button>
+                <button class="btn-secondary" id="regen-code-btn">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                  <span>Regenerate</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Incoming Files Queue -->
+            <div class="glass-panel" style="padding: 24px;">
+              <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Received Files</h3>
+              <div id="receive-queue-list"></div>
+            </div>
+          </div>
+
+          <!-- ================================================================
+               PAGE 4: SCAN
+               ================================================================ -->
+          <div class="view-page" id="page-scan">
+            <div class="glass-panel" style="padding: 28px; text-align: center; max-width: 600px; margin: 0 auto;">
+              <h2 style="font-family: var(--font-display); font-size: 24px; font-weight: 800; margin-bottom: 6px;">Scan Receiver QR</h2>
+              <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 24px;">Point camera at the receiver device screen</p>
+
+              <!-- Scanner Viewport with Laser Pulse Effect -->
+              <div class="qr-scanner-viewport" style="position: relative; width: 100%; height: 320px; background: #000; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); margin-bottom: 20px;">
+                <video id="scanner-video" playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <div class="scanner-laser"></div>
+              </div>
+
+              <div id="scanner-error-message" style="display: none; padding: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--status-danger); border-radius: var(--radius-sm); font-size: 13px; color: #fca5a5; margin-bottom: 16px;"></div>
+
+              <p style="font-size: 12px; color: var(--text-muted);">
+                If camera is not supported or accessible, you can enter the pairing code manually on the Send page.
+              </p>
+            </div>
+          </div>
+
+          <!-- ================================================================
+               PAGE 5: HISTORY
+               ================================================================ -->
+          <div class="view-page" id="page-history">
+            <div class="glass-panel" style="padding: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                  <h2 style="font-family: var(--font-display); font-size: 22px; font-weight: 800;">Transfer History</h2>
+                  <p style="color: var(--text-muted); font-size: 13px;">Locally persisted session logs with integrity hash records</p>
+                </div>
+                <button class="btn-secondary" onclick="window.transferEngine.history = []; localStorage.removeItem('sharex_transfer_history'); window.renderHistoryTable();" style="padding: 8px 16px; font-size: 12px;">Clear History</button>
+              </div>
+
+              <div class="history-table-container">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-muted); font-size: 12px; text-transform: uppercase;">
+                      <th style="padding: 12px 14px;">File Name</th>
+                      <th style="padding: 12px 14px;">Size</th>
+                      <th style="padding: 12px 14px;">Direction</th>
+                      <th style="padding: 12px 14px;">Status</th>
+                      <th style="padding: 12px 14px;">SHA-256 Hash</th>
+                      <th style="padding: 12px 14px;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="history-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Floating Bottom Dock -->
+    <nav class="mobile-floating-dock mobile-only">
+      <div class="dock-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="dock-item" data-page="send">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        <span>Send</span>
+      </div>
+      <div class="dock-item" data-page="receive">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        <span>Receive</span>
+      </div>
+      <div class="dock-item" data-page="scan">
+        <svg viewBox="0 0 24 24"><path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm9.5-6.5v3h-3v-3h3M21 5h-6v6h6V5zm-6 8h1.5v1.5H15V13zm1.5 1.5H18V16h-1.5v-1.5zm1.5-1.5H19.5v1.5H18V13zm-3 3h1.5V17.5H15V16zm1.5 1.5H18V19h-1.5v-1.5zm1.5-1.5H19.5V17.5H18V16zm0 3h1.5V20.5H18V19zm1.5-1.5H21V19h-1.5v-1.5z"/></svg>
+        <span>Scan</span>
+      </div>
+      <div class="dock-item" data-page="history">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+        <span>History</span>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ========================================================================
+       3. MODALS & DRAWERS
+       ======================================================================== -->
+
+  <!-- Receiver Consent Modal -->
+  <div class="modal-backdrop" id="consent-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Incoming File Transfer</h3>
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">
+        <strong id="consent-device-name" style="color: #fff;">Peer</strong> wants to send you
+        <strong id="consent-file-count" style="color: var(--accent-blue);">0 files</strong> (<span id="consent-total-size">0 B</span>).
+      </p>
+      <div id="consent-file-list" style="max-height: 180px; overflow-y: auto; margin-bottom: 24px;"></div>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn-secondary" id="consent-decline-btn">Decline</button>
+        <button class="btn-primary" id="consent-accept-btn">Accept Transfer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="settings-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">ShareX Settings</h3>
+        <button class="modal-close-btn" id="settings-close-btn">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Theme Selection -->
+        <div>
+          <label style="font-weight: 700; font-size: 13px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 10px;">Interface Theme</label>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="theme-choice" value="midnight-glass"> Midnight Glass
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="theme-choice" value="dark-glass"> Dark Glass
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="theme-choice" value="black-white-glass"> Black & White Glass
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="theme-choice" value="electric-blue"> Electric Blue
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="theme-choice" value="violet-glass"> Violet Glass
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="theme-choice" value="light-glass"> Light Glass
+            </label>
+          </div>
+        </div>
+
+        <!-- Performance Mode -->
+        <div>
+          <label style="font-weight: 700; font-size: 13px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px;">Performance & Optimization</label>
+          <select id="perf-mode-select" style="width: 100%;">
+            <option value="auto">Auto Optimization (Adaptive)</option>
+            <option value="battery-saver">Battery Saver (Low RAM / Throttled Particles)</option>
+            <option value="balanced">Balanced (Optimal)</option>
+            <option value="ultra">Ultra Experience (Max Particle Density & Glow)</option>
+          </select>
+        </div>
+
+        <!-- Chunk Size -->
+        <div>
+          <label style="font-weight: 700; font-size: 13px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px;">WebRTC Chunk Buffer Size</label>
+          <select id="chunk-size-select" style="width: 100%;">
+            <option value="32768">32 KB (Low Latency)</option>
+            <option value="65536" selected>64 KB (Recommended Standard)</option>
+            <option value="131072">128 KB (High Throughput)</option>
+            <option value="262144">256 KB (Maximum Chunk)</option>
+          </select>
+        </div>
+
+        <!-- Auto Accept Transfers -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Auto-Accept Transfers</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Accept incoming files without consent prompt</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="auto-accept-toggle">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Sound Effects -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Synthesized Audio Feedback</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Web Audio API chimes and cues</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="sound-toggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- STUN / TURN Configuration -->
+        <div>
+          <label style="font-weight: 700; font-size: 13px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px;">STUN Server URL</label>
+          <input type="text" id="stun-server-input" value="stun:stun.l.google.com:19302" style="width: 100%; font-family: var(--font-mono); font-size: 13px;">
+        </div>
+
+        <div>
+          <label style="font-weight: 700; font-size: 13px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px;">Signaling Server Endpoint (WebSocket / Worker)</label>
+          <input type="text" id="signaling-server-input" placeholder="e.g. wss://sharex-signaling.yourworker.workers.dev/ws" style="width: 100%; font-family: var(--font-mono); font-size: 13px;">
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Leave blank to use local broadcast bus or default worker</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cinematic Video Player Modal -->
+  <div class="modal-backdrop" id="video-player-modal">
+    <div class="video-player-container">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(6, 8, 13, 0.85); border-bottom: 1px solid var(--glass-border);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span id="video-player-title" style="font-weight: 700; font-size: 15px;">Video</span>
+          <span class="badge badge-blue" id="video-streaming-badge" style="display: none;">Streaming Live</span>
+        </div>
+        <button class="modal-close-btn" id="video-close-btn">&times;</button>
+      </div>
+
+      <div style="position: relative; width: 100%; background: #000; overflow: hidden;">
+        <video id="main-video-element" class="video-element" playsinline></video>
+
+        <!-- Video Overlay Controls -->
+        <div id="video-controls-overlay" class="video-controls-bar">
+          <div class="video-scrub-container" id="video-scrub-container">
+            <div class="video-scrub-track">
+              <div class="video-buffer-fill" id="video-buffer-fill"></div>
+              <div class="video-played-fill" id="video-played-fill"></div>
+            </div>
+          </div>
+          <div class="video-controls-row">
+            <div class="video-controls-left">
+              <button class="btn-icon" id="video-play-btn" style="width: 36px; height: 36px;">
+                <svg id="video-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+              <div class="video-time-display" id="video-time-display">0:00 / 0:00</div>
+              <div class="volume-slider-box">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--text-secondary)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                <input type="range" min="0" max="1" step="0.05" value="1" class="volume-slider" id="video-vol-slider">
+              </div>
+            </div>
+            <div class="video-controls-right">
+              <select id="video-speed-select" style="padding: 4px 8px; font-size: 12px; background: rgba(255,255,255,0.1);">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2.0x</option>
+              </select>
+              <button class="btn-icon" id="video-pip-btn" style="width: 36px; height: 36px;" title="Picture in Picture">
+                <svg viewBox="0 0 24 24"><path d="M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z"/></svg>
+              </button>
+              <button class="btn-icon" id="video-fs-btn" style="width: 36px; height: 36px;" title="Fullscreen">
+                <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music Player Modal -->
+  <div class="modal-backdrop" id="music-player-modal">
+    <div class="music-player-modal">
+      <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+        <span class="badge badge-violet">ShareX Audio Player</span>
+        <button class="modal-close-btn" id="music-close-btn">&times;</button>
+      </div>
+
+      <!-- Vinyl Spinning Disc Artwork -->
+      <div class="album-art-box">
+        <div id="vinyl-disc" class="vinyl-disc" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+          <div class="vinyl-center-hole">
+            <img src="assets/logos/sx-monogram.svg" width="28" height="28" alt="SX">
+          </div>
+        </div>
+      </div>
+
+      <!-- Track Information -->
+      <div style="text-align: center;">
+        <div id="music-title" style="font-size: 18px; font-weight: 700; color: #fff;">Audio Track</div>
+        <div id="music-artist" style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">ShareX Peer</div>
+      </div>
+
+      <!-- Waveform Simulation Visualizer -->
+      <div class="waveform-container">
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      </div>
+
+      <!-- Scrub Track -->
+      <div style="width: 100%;">
+        <div class="progress-track" id="audio-scrub-track" style="cursor: pointer; height: 6px;">
+          <div class="progress-fill" id="audio-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 6px;">
+          <span id="audio-time-display">0:00 / 0:00</span>
+          <span>Lossless Direct Stream</span>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <button class="btn-icon" style="width: 44px; height: 44px;"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+        <button class="btn-primary" id="music-play-btn" style="width: 60px; height: 60px; border-radius: 50%; padding: 0;">
+          <svg id="music-play-icon" viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="btn-icon" style="width: 44px; height: 44px;"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini Floating Music Player Bar -->
+  <div id="mini-music-player" class="mini-player-bar" style="display: none;">
+    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+      <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--bg-surface); display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border);">
+        <img src="assets/logos/sx-monogram.svg" width="22" height="22" alt="Music">
+      </div>
+      <div style="flex: 1; min-width: 0;">
+        <div id="mini-music-title" style="font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Playing Audio</div>
+        <div style="font-size: 11px; color: var(--accent-blue);">Now Playing</div>
+      </div>
+    </div>
+    <button class="btn-icon" id="mini-play-btn" style="width: 36px; height: 36px;">
+      <svg id="mini-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+  </div>
+
+  <!-- Document Viewer Modal -->
+  <div class="modal-backdrop" id="doc-viewer-modal">
+    <div class="doc-viewer-modal">
+      <div class="doc-viewer-toolbar">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <strong id="doc-viewer-title" style="font-size: 15px;">Document</strong>
+          <span id="doc-zoom-val" style="font-size: 12px; font-family: var(--font-mono); color: var(--text-muted);">100%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn-icon" id="doc-zoom-out" style="width: 32px; height: 32px;">-</button>
+          <button class="btn-icon" id="doc-zoom-reset" style="width: 32px; height: 32px; font-size: 11px;">1:1</button>
+          <button class="btn-icon" id="doc-zoom-in" style="width: 32px; height: 32px;">+</button>
+          <button class="btn-icon" id="doc-fullscreen-btn" style="width: 32px; height: 32px;" title="Fullscreen">
+            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+          </button>
+          <button class="btn-secondary" id="doc-download-btn" style="padding: 6px 14px; font-size: 12px;">Download</button>
+          <button class="modal-close-btn" id="doc-close-btn">&times;</button>
+        </div>
+      </div>
+      <div class="doc-viewer-content" id="doc-content-area"></div>
+    </div>
+  </div>
+
+  <!-- Image Viewer Lightbox Modal -->
+  <div class="modal-backdrop" id="image-viewer-modal">
+    <div class="image-viewer-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--glass-border);">
+        <strong id="img-viewer-title" style="font-size: 15px;">Image Preview</strong>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn-secondary" id="img-download-btn" style="padding: 6px 14px; font-size: 12px;">Download</button>
+          <button class="modal-close-btn" id="img-close-btn">&times;</button>
+        </div>
+      </div>
+      <div class="image-canvas-viewport" id="image-canvas-viewport">
+        <img id="image-preview-element" class="image-preview-element" alt="Preview">
+      </div>
+      <div class="image-floating-toolbar">
+        <button class="btn-icon" id="img-zoom-out" style="width: 32px; height: 32px;">-</button>
+        <span id="img-zoom-val" style="font-size: 12px; font-family: var(--font-mono); color: #fff;">100%</span>
+        <button class="btn-icon" id="img-zoom-in" style="width: 32px; height: 32px;">+</button>
+        <button class="btn-icon" id="img-zoom-reset" style="width: 32px; height: 32px; font-size: 11px;">Reset</button>
+        <button class="btn-icon" id="img-fs-btn" style="width: 32px; height: 32px;">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Drawer -->
+  <div class="drawer-backdrop" id="notification-drawer-backdrop">
+    <div class="notification-drawer">
+      <div class="drawer-header">
+        <h3 style="font-size: 18px; font-weight: 700;">Activity Notifications</h3>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button class="btn-secondary" onclick="window.notifications.clearHistory()" style="padding: 4px 10px; font-size: 11px;">Clear All</button>
+          <button class="modal-close-btn" id="drawer-close-btn">&times;</button>
+        </div>
+      </div>
+      <div class="drawer-body" id="notification-drawer-body"></div>
+    </div>
+  </div>
+
+  <!-- Storage Architecture Explainer Modal -->
+  <div class="modal-backdrop" id="storage-info-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">ShareX Storage-Free Architecture</h3>
+        <button class="modal-close-btn" id="storage-info-close-btn">&times;</button>
+      </div>
+      <div style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); display: flex; flex-direction: column; gap: 14px;">
+        <p>
+          <strong style="color: #fff;">How does ShareX operate without cloud storage?</strong><br>
+          Traditional file-sharing sites upload your private files to centralized servers or cloud buckets (like S3 or Google Drive). ShareX establishes a direct peer-to-peer WebRTC connection between devices.
+        </p>
+        <p>
+          <strong style="color: #fff;">What role does the server play?</strong><br>
+          The Cloudflare Worker acts solely as a signaling coordinator to exchange session codes, SDP offers, and ICE network candidates. Zero file bytes ever touch the server.
+        </p>
+        <p>
+          <strong style="color: #fff;">Integrity & Security:</strong><br>
+          All file transfers are streamed in 64KB binary chunks with SHA-256 cryptographic verification over TLS/DTLS encrypted channels.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="modal-backdrop" id="shortcuts-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Keyboard Shortcuts</h3>
+        <button class="modal-close-btn" id="shortcuts-close-btn">&times;</button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 13px;">
+        <div style="display: flex; justify-content: space-between;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">S</kbd> <span>Navigate to Send</span></div>
+        <div style="display: flex; justify-content: space-between;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">R</kbd> <span>Navigate to Receive</span></div>
+        <div style="display: flex; justify-content: space-between;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">Q</kbd> <span>Open QR Scanner</span></div>
+        <div style="display: flex; justify-content: space-between;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">H</kbd> <span>Transfer History</span></div>
+        <div style="display: flex; justify-content: space-between;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">Esc</kbd> <span>Close Modals</span></div>
+        <div style="display: flex; justify-content: space-between;"><kbd style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">?</kbd> <span>Toggle Shortcuts</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Alerts Container -->
+  <div id="toast-container"></div>
+
+  <!-- ========================================================================
+       4. SCRIPTS
+       ======================================================================== -->
+  <script src="js/sound.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/qr-engine.js"></script>
+  <script src="js/pairing.js"></script>
+  <script src="js/webrtc.js"></script>
+  <script src="js/transfer.js"></script>
+  <script src="js/streaming.js"></script>
+  <script src="js/media-player.js"></script>
+  <script src="js/document-viewer.js"></script>
+  <script src="js/image-viewer.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').then((reg) => {
+          console.log('[ShareX PWA] Service Worker registered successfully with scope:', reg.scope);
+        }).catch((err) => {
+          console.warn('[ShareX PWA] Service Worker registration skipped:', err);
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
